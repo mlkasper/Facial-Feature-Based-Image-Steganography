@@ -76,3 +76,13 @@ On Windows:
 Compatibility
 -----------
 JPEG and other lossy compression formats are not supported. 
+
+Known Issues
+------------
+1. If an image has a message encoded to it, and you encode a message with two facial features it will not decode properly the first time. It needs to be encoded again for it to decode properly. 
+    - This could be fixed in two ways.
+        - When encoding a picture it could copy an original to that file location so it's a clean photo everytime you encode. 
+        - Create a function to clear the image of any messages saved. 
+            - Again if you encode twice this will fix the problem anyway. 
+2. Some messages lengths may crash due to being too big for the facial feature selected. 
+    - The program will check the maximum length of a message by using the full face. This could be improved by finding out what facial feature is already used and calculate the length of the new feature and adding the two byte sizes together.
