@@ -14,13 +14,11 @@ def select_image():
     path = str(script_location) +"/dataset"
     
     pictures_list = os.listdir(path)
-    #randomly selecting a element from our picture list to perform facial feature recognition 
     picture = str(input("Enter the name of the file you want to use for encoding: "))
-    #picture = '1.png' #test
     flag=True
     os.chdir(path)
     img_path = path+"/"+picture
-    #print(os.path.isfile(img_path))
+ 
  
     if os.path.isfile(img_path)==False:
         while flag:
@@ -51,7 +49,7 @@ def do_facial_feature_recog(img,path, decode = 0, facialFeature = None):
             face_landmarks['mouth'] = face_landmarks['bottom_lip'] + face_landmarks['top_lip'] + face_landmarks['chin']
             face_landmarks['eyes'] = face_landmarks['left_eye'] + face_landmarks['right_eye'] + face_landmarks['left_eyebrow'] + face_landmarks['right_eyebrow']
             face_landmarks['nose'] = face_landmarks['nose_bridge'] + face_landmarks['nose_tip']
-            face_landmarks['face'] = face_landmarks['bottom_lip'] + face_landmarks['top_lip'] + face_landmarks['chin'] + face_landmarks['left_eye'] + face_landmarks['right_eye'] + face_landmarks['left_eyebrow'] + face_landmarks['right_eyebrow'] + face_landmarks['nose_bridge'] + face_landmarks['nose_tip']
+            face_landmarks['face'] = face_landmarks['bottom_lip'] + face_landmarks['top_lip'] + face_landmarks['chin'] + face_landmarks['left_eye'] + face_landmarks['right_eye']+ face_landmarks['left_eyebrow'] + face_landmarks['right_eyebrow'] + face_landmarks['nose_bridge'] + face_landmarks['nose_tip']
              
             #cleaning up the leftover points
             toRemove = ["bottom_lip","top_lip","chin","left_eye","right_eye","left_eyebrow","right_eyebrow","nose_bridge","nose_tip"]
@@ -67,11 +65,31 @@ def do_facial_feature_recog(img,path, decode = 0, facialFeature = None):
                     facial_feature = str(input("Please Enter a correct facial feature: ")).lower()
                     
 
-            points = face_landmarks[facial_feature] 
-            #this is to increase our points selections
+            points = face_landmarks[facial_feature]
+            fullFacePoints = face_landmarks["face"]
+            i = 0
+            lengthPointsFace = len(fullFacePoints)
+            lengthOfPoints = len(points)
             
-            expand_facial_points(points)
-            
+            while i < lengthOfPoints:
+                x, y = points[i][0], points[i][1]
+                #adding surrounding points to the total list of points (in diagonals)
+                for j in range(-10, 10):
+                    points.append((x+j, y+j))
+                i+= 1
+            i = 0
+            while i < lengthPointsFace: 
+                x, y = fullFacePoints[i][0], fullFacePoints[i][1]
+                for j in range(-10, 10): 
+                    fullFacePoints.append((x+j, y+j))
+                i += 1
+            #removing duplicates
+            fullFacePoints = list(dict.fromkeys(fullFacePoints))
+            points = list(dict.fromkeys(points))
+            print(f"This is len of points: {len(points)}") #test
+
+
+
             #Extracting pixel values
             pixels = pil_image.load()
             pixel_list = []
@@ -80,34 +98,4 @@ def do_facial_feature_recog(img,path, decode = 0, facialFeature = None):
                 pixel_list.append(pixels[x,y])
         d.line(points, width=0) #test
         pil_image.show() #test
-        return facial_feature,points,pixel_list
-
-
-def expand_facial_points(facial_points): 
-    i = 0
-    lengthOfPoints = len(facial_points)
-    print("This is length of points before expanding: ", lengthOfPoints) #test
-            
-    while i < lengthOfPoints:
-        x, y = facial_points[i][0], facial_points[i][1]
-        #adding surrounding points to the total list of points
-        addOne = ((x+1), (y+1))
-        addTwo = ((x+2), (y+2))
-        addThree = ((x+3), (y+3))
-        addFour = ((x+4), (y+4))
-        subOne = ((x-1), (y-1))
-        subTwo = ((x-2), (y-2))
-        subThree = ((x-3), (y-3))
-        subFour = ((x-4), (y-4))
-        facial_points.append(addOne)
-        facial_points.append(addTwo)
-        facial_points.append(addThree)
-        facial_points.append(addFour)
-        facial_points.append(subOne)
-        facial_points.append(subTwo)
-        facial_points.append(subThree)
-        facial_points.append(subFour)
-        i += 1
-    #removing duplicates
-    facial_points = list(dict.fromkeys(facial_points))
-    print("This is len of points: ", len(facial_points)) #test
+        return facial_feature,points,pixel_list,fullFacePoints
